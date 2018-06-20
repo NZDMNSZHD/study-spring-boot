@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xinzhentech.study.core.product.mapper.FlsProductMapper">
+    <resultMap type="com.xinzhentech.study.core.product.domain.FlsProduct" id="flsProductResultMap">
+            <result property="id" column="ID"/>
+            <result property="productType" column="PRODUCT_TYPE"/>
+            <result property="productCode" column="PRODUCT_CODE"/>
+            <result property="productName" column="PRODUCT_NAME"/>
+            <result property="status" column="STATUS"/>
+            <result property="createTime" column="CREATE_TIME"/>
+            <result property="lastUpdateTime" column="LAST_UPDATE_TIME"/>
+    </resultMap>
+
+    <sql id="table_columns">
+            ID,
+            PRODUCT_TYPE,
+            PRODUCT_CODE,
+            PRODUCT_NAME,
+            STATUS,
+            CREATE_TIME,
+            LAST_UPDATE_TIME
+    </sql>
+    <sql id="entity_properties">
+            #{id},
+            #{productType},
+            #{productCode},
+            #{productName},
+            #{status},
+            #{createTime},
+            #{lastUpdateTime}
+    </sql>
+
+    <!-- 使用like用法：columnName like concat('%',#{columnName},'%') -->
+    <sql id="page_where">
+        <trim prefix="where" prefixOverrides="and | or ">
+			<if test="id != null">and ID = #{id}</if>
+			<if test="productType != null">and PRODUCT_TYPE = #{productType}</if>
+            <if test="productCode != null and productCode != ''">and PRODUCT_CODE = #{productCode}</if>
+            <if test="productName != null and productName != ''">and PRODUCT_NAME = #{productName}</if>
+			<if test="status != null">and STATUS = #{status}</if>
+			<if test="createTime != null">and CREATE_TIME = #{createTime}</if>
+			<if test="lastUpdateTime != null">and LAST_UPDATE_TIME = #{lastUpdateTime}</if>
+        </trim>
+        <if test="page != null and page.sort!=null and page.sort!=''">
+            order by ${page.sort} ${page.order}
+        </if>
+        <!-- <if test="page == null or page.sort == null or page.sort == ''">order by sort </if> -->
+    </sql>
+
+    <insert id="insert" parameterType="com.xinzhentech.fcs.domain.FlsProduct">
+        insert into fls_product( <include refid="table_columns" /> )
+        values ( <include refid="entity_properties" /> )
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into fls_product( <include refid="table_columns" /> )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.id},
+                    #{item.productType},
+                    #{item.productCode},
+                    #{item.productName},
+                    #{item.status},
+                    #{item.createTime},
+                    #{item.lastUpdateTime}
+        )
+        </foreach>
+    </insert>
+
+    <delete id="delete" parameterType="String">
+        delete from fls_product
+        where id = #{id}
+    </delete>
+
+    <update id="deleteBatch">
+        update fls_product set delete_flag = 1
+        where id in
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+        #{id}
+        </foreach>
+    </update>
+
+    <update id="deleteLogic" parameterType="String">
+        update fls_product set delete_flag = 1
+        where id = #{id}
+    </update>
+
+    <update id="update" parameterType="com.xinzhentech.fcs.domain.FlsProduct">
+        update fls_product
+        <trim prefix="set" suffixOverrides=",">
+			<if test="productType != null">PRODUCT_TYPE = #{productType},</if>
+            <if test="productCode != null and productCode != ''">PRODUCT_CODE = #{productCode},</if>
+            <if test="productName != null and productName != ''">PRODUCT_NAME = #{productName},</if>
+			<if test="status != null">STATUS = #{status},</if>
+			<if test="createTime != null">CREATE_TIME = #{createTime},</if>
+			<if test="lastUpdateTime != null">LAST_UPDATE_TIME = #{lastUpdateTime},</if>
+        </trim>
+        <where>id = #{id}</where>
+    </update>
+
+    <select id="findAll" resultMap="flsProductResultMap">
+        select <include refid="table_columns" />
+        from fls_product
+    </select>
+
+    <select id="findList" resultMap="flsProductResultMap">
+        select <include refid="table_columns" />
+        from fls_product
+        <include refid="page_where" />
+    </select>
+
+    <select id="getCount" resultType="int" >
+        select count(id) from fls_product
+        <include refid="page_where" />
+    </select>
+
+
+    <select id="get" resultMap="flsProductResultMap" parameterType="String" >
+        select <include refid="table_columns" />
+        from fls_product
+        where id = #{id}
+    </select>
+
+    <!-- 其他自定义SQL -->
+</mapper>
